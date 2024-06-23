@@ -45,7 +45,7 @@
 typedef struct {
   EVENTS_ENUM_TYPE event;
   uint32_t timestamp;
-  uint8_t data;
+  uint16_t data;
 } EVENT_LOG_ENTRY_TYPE;
 
 typedef struct {
@@ -68,11 +68,11 @@ static const char* EVENTS_LEVEL_TYPE_STRING[] = {EVENTS_LEVEL_TYPE(GENERATE_STRI
 
 /* Local function prototypes */
 static void update_event_time(void);
-static void set_event(EVENTS_ENUM_TYPE event, uint8_t data, bool latched);
+static void set_event(EVENTS_ENUM_TYPE event, uint16_t data, bool latched);
 static void update_event_level(void);
 static void update_bms_status(void);
 
-static void log_event(EVENTS_ENUM_TYPE event, uint8_t data);
+static void log_event(EVENTS_ENUM_TYPE event, uint16_t data);
 static void print_event_log(void);
 static void check_ee_write(void);
 
@@ -132,66 +132,72 @@ void init_events(void) {
     events.entries[i].log = true;
   }
 
-  events.entries[EVENT_CANFD_INIT_FAILURE].level = EVENT_LEVEL_WARNING;
-  events.entries[EVENT_CAN_OVERRUN].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_CAN_RX_FAILURE].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_CANFD_RX_FAILURE].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_CAN_RX_WARNING].level = EVENT_LEVEL_WARNING;
-  events.entries[EVENT_CAN_TX_FAILURE].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_WATER_INGRESS].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_CHARGE_LIMIT_EXCEEDED].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_DISCHARGE_LIMIT_EXCEEDED].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_12V_LOW].level = EVENT_LEVEL_WARNING;
-  events.entries[EVENT_SOC_PLAUSIBILITY_ERROR].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_KWH_PLAUSIBILITY_ERROR].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_BATTERY_EMPTY].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_BATTERY_FULL].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_BATTERY_FROZEN].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_BATTERY_CAUTION].level = EVENT_LEVEL_INFO;
+  // ERROR events, sorted alphabetically
+  events.entries[EVENT_BATTERY_CHG_DISCHG_STOP_REQ].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_BATTERY_CHG_STOP_REQ].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_BATTERY_DISCHG_STOP_REQ].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_BATTERY_CHG_DISCHG_STOP_REQ].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_BATTERY_OVERHEAT].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_BATTERY_OVERVOLTAGE].level = EVENT_LEVEL_WARNING;
-  events.entries[EVENT_BATTERY_UNDERVOLTAGE].level = EVENT_LEVEL_WARNING;
-  events.entries[EVENT_LOW_SOH].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_HVIL_FAILURE].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_PRECHARGE_FAILURE].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_INTERNAL_OPEN_FAULT].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_INVERTER_OPEN_CONTACTOR].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_MODBUS_INVERTER_MISSING].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_ERROR_OPEN_CONTACTOR].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_CELL_UNDER_VOLTAGE].level = EVENT_LEVEL_ERROR;
+  events.entries[EVENT_CAN_RX_FAILURE].level = EVENT_LEVEL_ERROR;
+  events.entries[EVENT_CANFD_RX_FAILURE].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_CELL_OVER_VOLTAGE].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_CELL_DEVIATION_HIGH].level = EVENT_LEVEL_WARNING;
-  events.entries[EVENT_UNKNOWN_EVENT_SET].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_OTA_UPDATE].level = EVENT_LEVEL_UPDATE;
-  events.entries[EVENT_OTA_UPDATE_TIMEOUT].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_DUMMY_INFO].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_DUMMY_DEBUG].level = EVENT_LEVEL_DEBUG;
-  events.entries[EVENT_DUMMY_WARNING].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_CELL_UNDER_VOLTAGE].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_DUMMY_ERROR].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_SERIAL_RX_WARNING].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_HVIL_FAILURE].level = EVENT_LEVEL_ERROR;
+  events.entries[EVENT_INTERNAL_OPEN_FAULT].level = EVENT_LEVEL_ERROR;
+  events.entries[EVENT_LOW_SOH].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_SERIAL_RX_FAILURE].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_SERIAL_TX_FAILURE].level = EVENT_LEVEL_ERROR;
   events.entries[EVENT_SERIAL_TRANSMITTER_FAILURE].level = EVENT_LEVEL_ERROR;
-  events.entries[EVENT_EEPROM_WRITE].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_UNKNOWN].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_POWERON].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_EXT].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_SW].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_PANIC].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_SOC_PLAUSIBILITY_ERROR].level = EVENT_LEVEL_ERROR;
+  events.entries[EVENT_UNKNOWN_EVENT_SET].level = EVENT_LEVEL_ERROR;
+  events.entries[EVENT_WATER_INGRESS].level = EVENT_LEVEL_ERROR;
+
+  // WARNING events, sorted alphabetically
+  events.entries[EVENT_12V_LOW].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_BATTERY_OVERVOLTAGE].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_BATTERY_UNDERVOLTAGE].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_CANFD_INIT_FAILURE].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_CAN_RX_WARNING].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_CELL_DEVIATION_HIGH].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_DUMMY_WARNING].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_RESET_CPU_LOCKUP].level = EVENT_LEVEL_WARNING;
   events.entries[EVENT_RESET_INT_WDT].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_RESET_PANIC].level = EVENT_LEVEL_WARNING;
   events.entries[EVENT_RESET_TASK_WDT].level = EVENT_LEVEL_WARNING;
   events.entries[EVENT_RESET_WDT].level = EVENT_LEVEL_WARNING;
-  events.entries[EVENT_RESET_DEEPSLEEP].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_SERIAL_RX_WARNING].level = EVENT_LEVEL_WARNING;
+
+  // INFO events, sorted alphabetically
+  events.entries[EVENT_BATTERY_CAUTION].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_BATTERY_EMPTY].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_BATTERY_FULL].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_BATTERY_FROZEN].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_CHARGE_LIMIT_EXCEEDED].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_DISCHARGE_LIMIT_EXCEEDED].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_DUMMY_INFO].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_EEPROM_WRITE].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_ERROR_OPEN_CONTACTOR].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_INVERTER_OPEN_CONTACTOR].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_KWH_PLAUSIBILITY_ERROR].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_MODBUS_INVERTER_MISSING].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_OTA_UPDATE_TIMEOUT].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_PRECHARGE_FAILURE].level = EVENT_LEVEL_INFO;
   events.entries[EVENT_RESET_BROWNOUT].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_SDIO].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_USB].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_JTAG].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_DEEPSLEEP].level = EVENT_LEVEL_INFO;
   events.entries[EVENT_RESET_EFUSE].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_EXT].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_INT_WDT].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_JTAG].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_PANIC].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_POWERON].level = EVENT_LEVEL_INFO;
   events.entries[EVENT_RESET_PWR_GLITCH].level = EVENT_LEVEL_INFO;
-  events.entries[EVENT_RESET_CPU_LOCKUP].level = EVENT_LEVEL_WARNING;
+  events.entries[EVENT_RESET_SDIO].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_SW].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_USB].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_UNKNOWN].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_WDT].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_RESET_WDT].level = EVENT_LEVEL_INFO;
+  events.entries[EVENT_WATER_INGRESS].level = EVENT_LEVEL_INFO;
 
   events.entries[EVENT_EEPROM_WRITE].log = false;  // Don't log the logger...
 
@@ -201,11 +207,11 @@ void init_events(void) {
   events.update_timer.set_interval(2000);
 }
 
-void set_event(EVENTS_ENUM_TYPE event, uint8_t data) {
+void set_event(EVENTS_ENUM_TYPE event, uint16_t data) {
   set_event(event, data, false);
 }
 
-void set_event_latched(EVENTS_ENUM_TYPE event, uint8_t data) {
+void set_event_latched(EVENTS_ENUM_TYPE event, uint16_t data) {
   set_event(event, data, true);
 }
 
@@ -313,7 +319,7 @@ const char* get_event_message_string(EVENTS_ENUM_TYPE event) {
     case EVENT_OTA_UPDATE_TIMEOUT:
       return "OTA update timed out!";
     case EVENT_EEPROM_WRITE:
-      return "Info: The EEPROM was written";
+      return "Info: Regularly saving important system events to EEPROM memory to ensure data is preserved";
     case EVENT_RESET_UNKNOWN:
       return "Info: The board was reset unexpectedly, and reason can't be determined";
     case EVENT_RESET_POWERON:
@@ -372,7 +378,7 @@ EVENTS_LEVEL_TYPE get_event_level(void) {
 
 /* Local functions */
 
-static void set_event(EVENTS_ENUM_TYPE event, uint8_t data, bool latched) {
+static void set_event(EVENTS_ENUM_TYPE event, uint16_t data, bool latched) {
   // Just some defensive stuff if someone sets an unknown event
   if (event >= EVENT_NOF_EVENTS) {
     event = EVENT_UNKNOWN_EVENT_SET;
@@ -446,7 +452,7 @@ unsigned long get_current_event_time_secs(void) {
   return events.time_seconds;
 }
 
-static void log_event(EVENTS_ENUM_TYPE event, uint8_t data) {
+static void log_event(EVENTS_ENUM_TYPE event, uint16_t data) {
   // Update head with wrap to 0
   if (++events.event_log_head_index == EE_NOF_EVENT_ENTRIES) {
     events.event_log_head_index = 0;

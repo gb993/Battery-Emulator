@@ -244,7 +244,7 @@ void core_loop(void* task_time_us) {
 #endif
       update_values_inverter();  // Update values heading towards inverter
       if (DUMMY_EVENT_ENABLED) {
-        set_event(EVENT_DUMMY_ERROR, (uint8_t)millis());
+        set_event(EVENT_DUMMY_ERROR, (uint16_t)millis());
       }
     }
     END_TIME_MEASUREMENT_MAX(time_5s, datalayer.system.status.time_5s_us);
@@ -408,7 +408,7 @@ void init_CAN() {
     Serial.print("CAN-FD Configuration error 0x");
     Serial.println(errorCode, HEX);
 #endif
-    set_event(EVENT_CANFD_INIT_FAILURE, (uint8_t)errorCode);
+    set_event(EVENT_CANFD_INIT_FAILURE, (uint16_t)errorCode);
   }
 #endif
 }

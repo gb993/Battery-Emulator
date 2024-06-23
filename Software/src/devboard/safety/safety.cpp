@@ -86,7 +86,7 @@ void update_machineryprotection() {
   // Check diff between highest and lowest cell
   cell_deviation_mV = (datalayer.battery.status.cell_max_voltage_mV - datalayer.battery.status.cell_min_voltage_mV);
   if (cell_deviation_mV > MAX_CELL_DEVIATION_MV) {
-    set_event(EVENT_CELL_DEVIATION_HIGH, (cell_deviation_mV / 20));
+    set_event(EVENT_CELL_DEVIATION_HIGH, cell_deviation_mV);
   } else {
     clear_event(EVENT_CELL_DEVIATION_HIGH);
   }

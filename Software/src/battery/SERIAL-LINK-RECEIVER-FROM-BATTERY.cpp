@@ -128,7 +128,7 @@ void manageSerialLinkReceiver() {
       // Times Up -
       datalayer.battery.status.max_charge_power_W = 0;
       datalayer.battery.status.max_discharge_power_W = 0;
-      set_event(EVENT_SERIAL_RX_FAILURE, uint8_t(min(minutesLost, 255uL)));
+      set_event(EVENT_SERIAL_RX_FAILURE, min(minutesLost, 255uL));
       //----- Throw Error
     }
     // report Lost data & Max charge / Discharge reductions
